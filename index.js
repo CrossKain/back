@@ -19,7 +19,7 @@ app.get("*", (req, res) => {
             res.status(200).send("hello " + helloValue);
           } else {
             res.status(400).send("Enter a name");
-          }
+          }   
 
           return;
         }
