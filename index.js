@@ -1,39 +1,35 @@
 const express = require("express");
-const getUsers = require("./src/modules/users");
-const port = 3003;
+const dotenv = require("dotenv");
+const mongoose = require("mongoose");
+
 const app = express();
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const userRouter = require("./routes/users");
+const bookRouter = require("./routes/books");
+const loger = require("./middlewares/loger")
+
+dotenv.config();
+
+const { PORT, API_URL, DB_URL } = process.env;
+
+mongoose
+  .connect(DB_URL)
+  .then(() => {
+    console.log("connected to mongo");
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+app.use(cors());
+app.use(bodyParser.json());
+app.use(loger)
+app.use(userRouter);
+app.use(bookRouter);
 
 app.get("*", (req, res) => {
-  const url = new URL(req.url, "http://localhost:3003");
-  switch (url.pathname) {
-    case "/":
-      if (url.searchParams.size) {
-        const hasUsers = url.searchParams.has("users");
-        const hasHello = url.searchParams.has("hello");
-        if (hasHello) {
-          const helloValue = url.searchParams.get("hello");
-          if (helloValue) {
-            res.status(200).send("hello " + helloValue);
-          } else {
-            res.status(400).send("Enter a name");
-          }   
-
-          return;
-        }
-        if (hasUsers) {
-          const users = getUsers();
-          res.status(200).send(users);
-          return;
-        }
-        res.status(500).send("Invalid Param");
-      }
-
-      res.status(200).send("Hello World");
-      break;
-      default:
-        res.status(500).send("Invalid Path")
-  }
+  res.status(404).send("Маршрут не найден");
+});
+app.listen(PORT, () => {
+  console.log(`start on ${API_URL}:${PORT}`);
 });
